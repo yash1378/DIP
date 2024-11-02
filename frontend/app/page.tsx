@@ -26,9 +26,18 @@ const ImageUploadPage: React.FC = () => {
 
   const saveImageToLocalStorage = () => {
     if (selectedImage && imageName) {
-      localStorage.setItem(imageName, selectedImage as string);
+      const existingImages = localStorage.getItem("images");
+      let imagesArray;
+
+      if (!existingImages) {
+        imagesArray = [];
+      } else {
+        imagesArray = JSON.parse(existingImages);
+      }
+
+      imagesArray.push({ name: imageName, data: selectedImage });
+      localStorage.setItem("images", JSON.stringify(imagesArray));
       alert(`Image "${imageName}" saved to local storage.`);
-      // Optionally, clear the input after saving
       setImageName("");
       setSelectedImage(null);
     } else {
@@ -90,7 +99,6 @@ const ImageUploadPage: React.FC = () => {
                   />
                 </div>
               </motion.div>
-              {/* Button to save the image */}
               <motion.div
                 whileHover={{ scale: 1.02 }}
                 whileTap={{ scale: 0.98 }}
