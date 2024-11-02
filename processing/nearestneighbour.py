@@ -53,4 +53,5 @@ new_height, new_width = 500, 300  # Replace with your desired dimensions
 nearest_neighbour_image = nearest_neighbour_interpolation(lr_image, new_width, new_height)
 
 # Display results
-display_images([nearest_neighbour_image], ["Nearest Neighbour"])
+if __name__ == "__main__":
+    display_images([nearest_neighbour_image], ["Nearest Neighbour"])
