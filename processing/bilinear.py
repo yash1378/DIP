@@ -65,4 +65,5 @@ new_height, new_width = 500, 300  # Replace with your desired dimensions
 bilinear_image = bilinear_interpolation(lr_image, new_width, new_height)
 
 # Display results
-display_images([bilinear_image], ["Bilinear"])
+if __name__ == "__main__":
+    display_images([bilinear_image], ["Bilinear"])

@@ -87,4 +87,5 @@ new_height, new_width = 500, 300  # Replace with your desired dimensions
 bicubic_image = bicubic_interpolation(lr_image, new_width, new_height)
 
 # Display results
-display_images([bicubic_image], ["Bicubic"])
+if __name__ == "__main__":
+    display_images([bicubic_image], ["Bicubic"])
