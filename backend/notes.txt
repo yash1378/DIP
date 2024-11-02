@@ -1,0 +1,40 @@
+   
+** API  for the super_resolute page of frontend  should return an array of these objects
+
+    {
+      id: , //Id no of algo
+      name: , //Name of algo
+      description: , //Description of the algo
+      complexity: , //Algorithm's Time Complexity
+      category: "Image Processing", //This has to be hardcoded as Image Processing for all
+      performance: , //this would be initialized as 0 and would be updated in future updates
+      tags:  // ye dushing batayega 
+    }
+
+
+** API for the Processing page of frontend should return an array of objects like these 
+
+interface ProcessingStep {
+  id: string; 
+  name: string; //name of the post processing steps
+  description: string;
+  impact: 'High' | 'Medium' | 'Low';
+  category: string; //"post processing" hardcode for all 
+  timeRequired: string; // would be given by dushing default 0 rkh lio
+  features: string[]; //would be given by  dushing
+}
+
+** API for the preview returning the image made by applying the enlarging Algorithm
+--(make this API to accept an image as request body on which the processing needs to be done)
+-- (also the type of algorithm would be sent by frontend so according to it the processing algorithm has to be called)
+
+
+** API for the preview returning  the image made after applying the post processing steps 
+--(make this API to accept an image as request body on which the processing needs to be done)
+-- (also the type of post processing step would be sent by frontend so according to it the processing algorithm has to be called)
+
+
+
+
+## Fully Integrate the python processing steps after getting the image which has to be processed from the frontend
+
