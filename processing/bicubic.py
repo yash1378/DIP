@@ -1,5 +1,5 @@
 import numpy as np
-from image_utils import load_image, display_images, draw_pixel_trace
+from .image_utils import load_image, display_images, draw_pixel_trace
 
 # Load the low-resolution image
 image_path = "./robot.jpg"  # Replace with your image path
