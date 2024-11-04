@@ -1,6 +1,10 @@
 from flask import Flask, jsonify, request, send_file
 from werkzeug.utils import secure_filename
 from flask_cors import CORS
+from io import BytesIO
+import numpy as np
+from nearest_neighbour_interpolation import nearest_neighbour_interpolation  # Adjust based on your directory structure
+
 import base64
 import os
 import sys
@@ -11,6 +15,11 @@ import io
 current_dir = os.path.dirname(os.path.abspath(__file__))
 root_dir = os.path.abspath(os.path.join(current_dir, '..'))
 sys.path.append(root_dir)
+# Define a directory to save processed images
+PROCESSED_IMAGE_DIR = 'processed_images'
+
+# Ensure the directory exists
+os.makedirs(PROCESSED_IMAGE_DIR, exist_ok=True)
 
 # from processing import bicubic
 
@@ -95,57 +104,48 @@ def get_processing_steps():
 
 @app.route('/api/apply-algorithm', methods=['POST'])
 def apply_algorithm():
-    # Get the JSON data from the request body
     data = request.get_json()
     
-    # Check if the image and algorithm_id are present in the data
     if not data or 'imageData' not in data or 'algoId' not in data:
         return jsonify({"error": "No image file or algorithm ID provided"}), 400
-    
-    # Extract image and algorithm ID
+
     image_data = data['imageData']
     algorithm_id = data['algoId']
-    
-    # Print the extracted values to the backend terminal
-    print(f"Received image: {image_data[:30]}...")  # Print a truncated version for security
-    print(f"Algorithm ID: {algorithm_id}")
 
-    # Decode the base64 image data
-    header, encoded = image_data.split(',', 1)  # Split the header from the base64 data
+    # Decode base64 image
+    header, encoded = image_data.split(',', 1)
     image_bytes = base64.b64decode(encoded)
+    image = Image.open(BytesIO(image_bytes))
+    image_np = np.array(image)
 
-    # Create a filename and save the image
-    image_filename = f"uploaded_image_{algorithm_id}.png"  # Change extension as needed
-    image_path = os.path.join('uploads', image_filename)  # Ensure 'uploads' directory exists
+    # Set new dimensions for the output image
+    new_height, new_width = 500, 300  # Replace with your desired dimensions
 
-    # Save the image to the specified path
-    with open(image_path, 'wb') as image_file:
-        image_file.write(image_bytes)
+    # Process the image based on the selected algorithm
+    # if algorithm_id == 'bicubic':
+    #     processed_image_np = nearest_neighbour_interpolation(image_np, new_width, new_height)
+    # elif algorithm_id == 'nearest-neighbour':
+    processed_image_np = nearest_neighbour_interpolation(image_np, new_width, new_height)
+    # else:
+        # return jsonify({"error": "Invalid algorithm ID provided"}), 400
 
-    # Optionally, you can apply the specified algorithm here...
+    processed_image = Image.fromarray(processed_image_np)
 
-    return jsonify({"message": "Algorithm applied successfully", "image_path": image_path}), 200
+    # Save the processed image
+    processed_image_filename = f"processed_image_{algorithm_id}.png"
+    processed_image_path = os.path.join(PROCESSED_IMAGE_DIR, processed_image_filename)
+    processed_image.save(processed_image_path)
 
-    # if not algorithm_id:
-    #     return jsonify({"error": "No algorithm ID provided"}), 400
+    # Encode the processed image to base64 for API response
+    buffered = BytesIO()
+    processed_image.save(buffered, format="PNG")
+    processed_image_base64 = base64.b64encode(buffered.getvalue()).decode("utf-8")
+
+    return jsonify({
+        "processedImage": f"data:image/png;base64,{processed_image_base64}",
+        "savedPath": processed_image_path
+    }), 200
     
-    # if image.filename == '':
-    #     return jsonify({"error": "No selected image file"}), 400
     
-    # if image:
-    #     filename = secure_filename(image.filename)
-    #     filepath = os.path.join(app.config['UPLOAD_FOLDER'], filename)
-    #     image.save(filepath)
-    
-    #     if algorithm_id == 0:
-    #         buf = bicubic.process_image(filepath)
-    #     else:
-    #         return jsonify({"error": "Invalid Algorithm ID"}), 500
-        
-    #     os.remove(filepath)
-        
-    #     return send_file(buf, mimetype='image/png', as_attachment=True, download_name='processed_image.png')
-
-
 if __name__ == '__main__':
     app.run(debug=True)
