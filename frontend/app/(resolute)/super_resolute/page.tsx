@@ -1,18 +1,18 @@
-"use client"
-import React from 'react';
-import { 
-  ChevronRight, 
-  Sparkles, 
-  Code2, 
-  Cpu, 
+"use client";
+import React, { useEffect, useState } from "react";
+import {
+  ChevronRight,
+  Sparkles,
+  Code2,
+  Cpu,
   BarChart2,
-  ArrowRight
-} from 'lucide-react';
+  ArrowRight,
+} from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { useRouter } from 'next/navigation';
-import { useEffect,useState } from 'react';
+import { useRouter } from "next/navigation";
+
 // TypeScript interfaces
 interface Algorithm {
   id: string;
@@ -24,13 +24,24 @@ interface Algorithm {
   tags: string[];
 }
 
+interface ImageData {
+  data: string; // base64 string
+  dimensions: string; // e.g., "1920x1080"
+  name: string; // image name
+}
+
 const AlgorithmsDisplay = () => {
-  // Mock data - replace with API call
-  const [algorithms,setAlgorithms] = useState<Algorithm[]>([]);
+  const [algorithms, setAlgorithms] = useState<Algorithm[]>([]);
+  const [selectedAlgo, setSelectedAlgo] = useState<Algorithm | null>(null);
+  const [images, setImages] = useState<ImageData[]>([]);
+  const Router = useRouter();
+
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const response = await fetch("http://localhost:5000/api/list_super_resolution_methods");
+        const response = await fetch(
+          "http://localhost:5000/api/list_super_resolution_methods"
+        );
         const data = await response.json();
         console.log(data);
         setAlgorithms(data);
@@ -38,59 +49,9 @@ const AlgorithmsDisplay = () => {
         console.error("Error fetching data:", error);
       }
     };
-  
+
     fetchData();
   }, []);
-
-  // const algorithms: Algorithm[] = [
-  //   {
-  //     id: "1",
-  //     name: "Enhanced Bicubic Interpolation",
-  //     description: "Advanced image scaling using cubic splines with edge preservation",
-  //     complexity: "O(n²)",
-  //     category: "Image Processing",
-  //     performance: 92,
-  //     tags: ["Scaling", "High Quality", "Interpolation"]
-  //   },
-  //   {
-  //     id: "2",
-  //     name: "Neural Super Resolution",
-  //     description: "Deep learning-based upscaling with detail enhancement",
-  //     complexity: "O(n³)",
-  //     category: "Machine Learning",
-  //     performance: 98,
-  //     tags: ["AI", "Deep Learning", "GPU Accelerated"]
-  //   },
-  //   {
-  //     id: "3",
-  //     name: "Adaptive Lanczos Algorithm",
-  //     description: "Context-aware image resizing with artifact reduction",
-  //     complexity: "O(n log n)",
-  //     category: "Image Processing",
-  //     performance: 85,
-  //     tags: ["Fast", "Quality", "Adaptive"]
-  //   },
-  //   {
-  //     id: "4",
-  //     name: "Quantum Image Magnification",
-  //     description: "Next-gen image processing using quantum computing principles",
-  //     complexity: "O(log n)",
-  //     category: "Quantum Computing",
-  //     performance: 95,
-  //     tags: ["Experimental", "Quantum", "High Speed"]
-  //   },
-  //   {
-  //     id: "5",
-  //     name: "Multi-Frame Synthesis",
-  //     description: "Combines multiple frames for enhanced resolution output",
-  //     complexity: "O(n²)",
-  //     category: "Video Processing",
-  //     performance: 88,
-  //     tags: ["Video", "Real-time", "Multi-frame"]
-  //   }
-  // ];
-
-  const Router = useRouter();
 
   const getCategoryIcon = (category: string) => {
     switch (category) {
@@ -111,11 +72,40 @@ const AlgorithmsDisplay = () => {
     return "text-yellow-500";
   };
 
+  const handleViewDetails = (algo: Algorithm) => {
+    setSelectedAlgo(algo);
+    // Fetch images from local storage
+    const storedImages = localStorage.getItem("images");
+    if (storedImages) {
+      setImages(JSON.parse(storedImages));
+    }
+  };
+
+  const handleImageClick = async (image: ImageData) => {
+    // Send the request to the backend with the image data and algorithm ID
+    try {
+      const response = await fetch("http://localhost:5000/api/apply-algorithm", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          imageData: image.data,
+          algoId: selectedAlgo?.id,
+        }),
+      });
+      const data = await response.json();
+      console.log("Response from backend:", data);
+    } catch (error) {
+      console.error("Error sending image to backend:", error);
+    }
+  };
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50 p-8">
       <div className="max-w-5xl mx-auto space-y-6">
         {algorithms.map((algo) => (
-          <Card 
+          <Card
             key={algo.id}
             className="hover:shadow-xl transition-all duration-300 border-0 backdrop-blur-sm bg-white/90"
           >
@@ -132,12 +122,10 @@ const AlgorithmsDisplay = () => {
                   <h3 className="text-xl font-semibold text-gray-800">
                     {algo.name}
                   </h3>
-                  <p className="text-gray-600">
-                    {algo.description}
-                  </p>
+                  <p className="text-gray-600">{algo.description}</p>
                   <div className="flex flex-wrap gap-2">
                     {algo.tags.map((tag, index) => (
-                      <Badge 
+                      <Badge
                         key={index}
                         variant="secondary"
                         className="bg-blue-50 hover:bg-blue-100 text-blue-700"
@@ -152,7 +140,7 @@ const AlgorithmsDisplay = () => {
                 <div className="flex flex-col justify-between items-end">
                   <div className="space-y-2 text-right">
                     <div className="text-sm text-gray-500">
-                      Time Complexity: 
+                      Time Complexity:
                       <span className="ml-2 font-mono font-medium">
                         {algo.complexity}
                       </span>
@@ -161,14 +149,18 @@ const AlgorithmsDisplay = () => {
                       <span className="text-sm text-gray-500">
                         Performance Score:
                       </span>
-                      <span className={`text-lg font-bold ${getPerformanceColor(algo.performance)}`}>
+                      <span
+                        className={`text-lg font-bold ${getPerformanceColor(
+                          algo.performance
+                        )}`}
+                      >
                         {algo.performance}%
                       </span>
                     </div>
                   </div>
 
                   <Button
-                    onClick={() => Router.push(`/algorithm/${algo.id}`)}
+                    onClick={() => handleViewDetails(algo)}
                     className="group flex items-center gap-2 bg-gradient-to-r from-blue-500 to-indigo-500 hover:from-blue-600 hover:to-indigo-600 text-white transition-all duration-300"
                   >
                     View Details
@@ -179,6 +171,33 @@ const AlgorithmsDisplay = () => {
             </CardContent>
           </Card>
         ))}
+
+        {/* Display Images if an algorithm is selected */}
+        {selectedAlgo && (
+          <div className="mt-8 space-y-4">
+            <h2 className="text-2xl font-semibold text-gray-800">
+              Images for {selectedAlgo.name}
+            </h2>
+            <div className="grid grid-cols-3 gap-4">
+              {images.map((image, index) => (
+                <div
+                  key={index}
+                  className="cursor-pointer border-2 border-gray-200 rounded-lg overflow-hidden"
+                  onClick={() => handleImageClick(image)}
+                >
+                  <img
+                    src={image.data}
+                    alt={image.name}
+                    className="w-full h-auto"
+                  />
+                  <div className="p-2 text-center text-gray-600">
+                    <span>{image.name}</span>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );
