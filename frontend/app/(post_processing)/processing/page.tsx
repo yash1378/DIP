@@ -1,5 +1,6 @@
 "use client"
 import React from 'react';
+import {useEffect,useState} from 'react';
 import { 
   ArrowRight,
   Wand2,
@@ -27,58 +28,76 @@ interface ProcessingStep {
 }
 
 const PostProcessingDisplay = () => {
-  const steps: ProcessingStep[] = [
-    {
-      id: "1",
-      name: "Color Enhancement & Balancing",
-      description: "Advanced color correction with AI-powered tone mapping",
-      impact: "High",
-      category: "Color Correction",
-      timeRequired: "2-3 seconds",
-      features: ["Auto Balance", "HDR", "Vibrance"],
-      qualityScore: 96
-    },
-    {
-      id: "2",
-      name: "Noise Reduction & Sharpening",
-      description: "Intelligent noise reduction while preserving edge details",
-      impact: "Medium",
-      category: "Detail Enhancement",
-      timeRequired: "4-5 seconds",
-      features: ["Smart Sharpen", "Denoise", "Detail Preserve"],
-      qualityScore: 92
-    },
-    {
-      id: "3",
-      name: "Contrast & Brightness Optimization",
-      description: "Dynamic range adjustment with local contrast enhancement",
-      impact: "High",
-      category: "Tone Adjustment",
-      timeRequired: "1-2 seconds",
-      features: ["Auto Contrast", "Shadow Lift", "Highlight Recovery"],
-      qualityScore: 94
-    },
-    {
-      id: "4",
-      name: "Artifact Removal & Cleanup",
-      description: "Advanced algorithms to remove compression artifacts",
-      impact: "Medium",
-      category: "Image Cleanup",
-      timeRequired: "3-4 seconds",
-      features: ["JPEG Fix", "Smooth Edges", "Pattern Remove"],
-      qualityScore: 88
-    },
-    {
-      id: "5",
-      name: "Final Image Optimization",
-      description: "Smart compression and format optimization",
-      impact: "High",
-      category: "Optimization",
-      timeRequired: "2-3 seconds",
-      features: ["Smart Compress", "Format Select", "Metadata Clean"],
-      qualityScore: 95
-    }
-  ];
+  const [steps,setSteps] = useState<ProcessingStep[]>([]);
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const response = await fetch("http://localhost:5000/api/list_post_processing_methods");
+        const data = await response.json();
+        console.log(data);
+        setSteps(data);
+      } catch (error) {
+        console.error("Error fetching data:", error);
+      }
+    };
+  
+    fetchData();
+  }, []);
+ 
+ 
+ 
+  // const steps: ProcessingStep[] = [
+  //   {
+  //     id: "1",
+  //     name: "Color Enhancement & Balancing",
+  //     description: "Advanced color correction with AI-powered tone mapping",
+  //     impact: "High",
+  //     category: "Color Correction",
+  //     timeRequired: "2-3 seconds",
+  //     features: ["Auto Balance", "HDR", "Vibrance"],
+  //     qualityScore: 96
+  //   },
+  //   {
+  //     id: "2",
+  //     name: "Noise Reduction & Sharpening",
+  //     description: "Intelligent noise reduction while preserving edge details",
+  //     impact: "Medium",
+  //     category: "Detail Enhancement",
+  //     timeRequired: "4-5 seconds",
+  //     features: ["Smart Sharpen", "Denoise", "Detail Preserve"],
+  //     qualityScore: 92
+  //   },
+  //   {
+  //     id: "3",
+  //     name: "Contrast & Brightness Optimization",
+  //     description: "Dynamic range adjustment with local contrast enhancement",
+  //     impact: "High",
+  //     category: "Tone Adjustment",
+  //     timeRequired: "1-2 seconds",
+  //     features: ["Auto Contrast", "Shadow Lift", "Highlight Recovery"],
+  //     qualityScore: 94
+  //   },
+  //   {
+  //     id: "4",
+  //     name: "Artifact Removal & Cleanup",
+  //     description: "Advanced algorithms to remove compression artifacts",
+  //     impact: "Medium",
+  //     category: "Image Cleanup",
+  //     timeRequired: "3-4 seconds",
+  //     features: ["JPEG Fix", "Smooth Edges", "Pattern Remove"],
+  //     qualityScore: 88
+  //   },
+  //   {
+  //     id: "5",
+  //     name: "Final Image Optimization",
+  //     description: "Smart compression and format optimization",
+  //     impact: "High",
+  //     category: "Optimization",
+  //     timeRequired: "2-3 seconds",
+  //     features: ["Smart Compress", "Format Select", "Metadata Clean"],
+  //     qualityScore: 95
+  //   }
+  // ];
 
   const navigate = useRouter();
 

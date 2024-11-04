@@ -1,19 +1,20 @@
 from flask import Flask, jsonify, request, send_file
 from werkzeug.utils import secure_filename
+from flask_cors import CORS
 import os
+import sys
 from PIL import Image
 import io
 
-import sys
-import os
-
+# Add the root directory to sys.path to access 'processing' as a sibling directory to 'backend'
 current_dir = os.path.dirname(os.path.abspath(__file__))
-parent_dir = os.path.dirname(current_dir)
-sys.path.append(parent_dir)
+root_dir = os.path.abspath(os.path.join(current_dir, '..'))
+sys.path.append(root_dir)
 
-from processing import bicubic
+# from processing import bicubic
 
 app = Flask(__name__)
+CORS(app)  # Enable CORS for all routes
 
 UPLOAD_FOLDER = 'uploads'
 if not os.path.exists(UPLOAD_FOLDER):
@@ -90,34 +91,6 @@ def get_processing_steps():
         }
     ]
     return jsonify(processing_steps)
-
-@app.route('/api/apply-algorithm', methods=['POST'])
-def apply_algorithm():
-    if 'image' not in request.files:
-        return jsonify({"error": "No image file provided"}), 400
-    
-    image = request.files['image']
-    algorithm_id = request.form.get('algorithm_id')
-    
-    if not algorithm_id:
-        return jsonify({"error": "No algorithm ID provided"}), 400
-    
-    if image.filename == '':
-        return jsonify({"error": "No selected image file"}), 400
-    
-    if image:
-        filename = secure_filename(image.filename)
-        filepath = os.path.join(app.config['UPLOAD_FOLDER'], filename)
-        image.save(filepath)
-    
-        if algorithm_id == 0:
-            buf = bicubic.process_image(filepath)
-        else:
-            return jsonify({"error": "Invalid Algorithm ID"}), 500
-        
-        os.remove(filepath)
-        
-        return send_file(buf, mimetype='image/png', as_attachment=True, download_name='processed_image.png')
 
 if __name__ == '__main__':
     app.run(debug=True)

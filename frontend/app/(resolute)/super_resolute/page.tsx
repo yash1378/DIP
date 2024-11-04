@@ -12,7 +12,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { useRouter } from 'next/navigation';
-
+import { useEffect,useState } from 'react';
 // TypeScript interfaces
 interface Algorithm {
   id: string;
@@ -26,53 +26,69 @@ interface Algorithm {
 
 const AlgorithmsDisplay = () => {
   // Mock data - replace with API call
-  const algorithms: Algorithm[] = [
-    {
-      id: "1",
-      name: "Enhanced Bicubic Interpolation",
-      description: "Advanced image scaling using cubic splines with edge preservation",
-      complexity: "O(n²)",
-      category: "Image Processing",
-      performance: 92,
-      tags: ["Scaling", "High Quality", "Interpolation"]
-    },
-    {
-      id: "2",
-      name: "Neural Super Resolution",
-      description: "Deep learning-based upscaling with detail enhancement",
-      complexity: "O(n³)",
-      category: "Machine Learning",
-      performance: 98,
-      tags: ["AI", "Deep Learning", "GPU Accelerated"]
-    },
-    {
-      id: "3",
-      name: "Adaptive Lanczos Algorithm",
-      description: "Context-aware image resizing with artifact reduction",
-      complexity: "O(n log n)",
-      category: "Image Processing",
-      performance: 85,
-      tags: ["Fast", "Quality", "Adaptive"]
-    },
-    {
-      id: "4",
-      name: "Quantum Image Magnification",
-      description: "Next-gen image processing using quantum computing principles",
-      complexity: "O(log n)",
-      category: "Quantum Computing",
-      performance: 95,
-      tags: ["Experimental", "Quantum", "High Speed"]
-    },
-    {
-      id: "5",
-      name: "Multi-Frame Synthesis",
-      description: "Combines multiple frames for enhanced resolution output",
-      complexity: "O(n²)",
-      category: "Video Processing",
-      performance: 88,
-      tags: ["Video", "Real-time", "Multi-frame"]
-    }
-  ];
+  const [algorithms,setAlgorithms] = useState<Algorithm[]>([]);
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const response = await fetch("http://localhost:5000/api/list_super_resolution_methods");
+        const data = await response.json();
+        console.log(data);
+        setAlgorithms(data);
+      } catch (error) {
+        console.error("Error fetching data:", error);
+      }
+    };
+  
+    fetchData();
+  }, []);
+
+  // const algorithms: Algorithm[] = [
+  //   {
+  //     id: "1",
+  //     name: "Enhanced Bicubic Interpolation",
+  //     description: "Advanced image scaling using cubic splines with edge preservation",
+  //     complexity: "O(n²)",
+  //     category: "Image Processing",
+  //     performance: 92,
+  //     tags: ["Scaling", "High Quality", "Interpolation"]
+  //   },
+  //   {
+  //     id: "2",
+  //     name: "Neural Super Resolution",
+  //     description: "Deep learning-based upscaling with detail enhancement",
+  //     complexity: "O(n³)",
+  //     category: "Machine Learning",
+  //     performance: 98,
+  //     tags: ["AI", "Deep Learning", "GPU Accelerated"]
+  //   },
+  //   {
+  //     id: "3",
+  //     name: "Adaptive Lanczos Algorithm",
+  //     description: "Context-aware image resizing with artifact reduction",
+  //     complexity: "O(n log n)",
+  //     category: "Image Processing",
+  //     performance: 85,
+  //     tags: ["Fast", "Quality", "Adaptive"]
+  //   },
+  //   {
+  //     id: "4",
+  //     name: "Quantum Image Magnification",
+  //     description: "Next-gen image processing using quantum computing principles",
+  //     complexity: "O(log n)",
+  //     category: "Quantum Computing",
+  //     performance: 95,
+  //     tags: ["Experimental", "Quantum", "High Speed"]
+  //   },
+  //   {
+  //     id: "5",
+  //     name: "Multi-Frame Synthesis",
+  //     description: "Combines multiple frames for enhanced resolution output",
+  //     complexity: "O(n²)",
+  //     category: "Video Processing",
+  //     performance: 88,
+  //     tags: ["Video", "Real-time", "Multi-frame"]
+  //   }
+  // ];
 
   const Router = useRouter();
 
