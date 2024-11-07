@@ -4,17 +4,6 @@ import cv2
 from image_utils import load_image, display_images, draw_pixel_trace
 from nearest_neighbour_interpolation import nearest_neighbour_interpolation
 
-# Load the low-resolution image
-image_path = "./robot.jpg"  # Replace with your image path
-lr_image = load_image(image_path)  # Use the load_image function
-
-# Example of displaying the loaded image
-# display_images([lr_image], ["Low-Resolution Image"])
-
-# Example of drawing pixel traces
-# traced_image = draw_pixel_trace(lr_image, pixel_size=5)  # Adjust pixel size as needed
-# display_images([traced_image], ["Traced Image"])
-
 # Wavelet based SR
 def wavelet_super_resolution_color(image, new_width, new_height):
     """
@@ -59,15 +48,3 @@ def wavelet_super_resolution_color(image, new_width, new_height):
     super_resolved_image = cv2.merge(super_resolved_channels)
     
     return super_resolved_image
-
-
-# Example
-# Set new dimensions for the output image
-new_height, new_width = 750, 750  # Replace with your desired dimensions
-
-# Perform interpolations
-wavelet_image = wavelet_super_resolution_color(lr_image, new_width, new_height)
-
-# Display results
-if __name__ == "__main__":
-    display_images([wavelet_image], ["Wavelet based SR"])

@@ -4,6 +4,14 @@ from flask_cors import CORS
 from io import BytesIO
 import numpy as np
 from nearest_neighbour_interpolation import nearest_neighbour_interpolation  # Adjust based on your directory structure
+from bicubic_interpolation import bicubic_interpolation
+from bilinear import bilinear_interpolation
+from fourier import fourier_transform_super_resolution
+from iterativebackprojection import iterative_back_projection
+from lanczos import lanczos_resample
+from nonlocal_interpolation import non_local_means_super_resolution
+from totalvariation import total_variation_denoising
+from wavelet import wavelet_super_resolution_color
 
 import base64
 import os
@@ -122,12 +130,26 @@ def apply_algorithm():
     new_height, new_width = 500, 300  # Replace with your desired dimensions
 
     # Process the image based on the selected algorithm
-    # if algorithm_id == 'bicubic':
-    #     processed_image_np = nearest_neighbour_interpolation(image_np, new_width, new_height)
-    # elif algorithm_id == 'nearest-neighbour':
-    processed_image_np = nearest_neighbour_interpolation(image_np, new_width, new_height)
-    # else:
-        # return jsonify({"error": "Invalid algorithm ID provided"}), 400
+    if algorithm_id == 'nearest-neighbour':
+        processed_image_np = nearest_neighbour_interpolation(image_np, new_width, new_height)
+    elif algorithm_id == 'bicubic':
+        processed_image_np = bicubic_interpolation(image_np, new_width, new_height)
+    elif algorithm_id == 'bilinear':
+        processed_image_np = bilinear_interpolation(image_np, new_width, new_height)
+    elif algorithm_id == 'fourier':
+        processed_image_np = fourier_transform_super_resolution(image_np, new_width, new_height)
+    elif algorithm_id == 'iterative-back-projection':
+        processed_image_np = iterative_back_projection(image_np, new_width, new_height)
+    elif algorithm_id == 'lanczos':
+        processed_image_np = lanczos_resample(image_np, new_width, new_height)
+    elif algorithm_id == 'non-local':
+        processed_image_np = non_local_means_super_resolution(image_np, new_width, new_height)
+    elif algorithm_id == 'total-variation':
+        processed_image_np = total_variation_denoising(image_np, new_width, new_height)
+    elif algorithm_id == 'wavelet':
+        processed_image_np = wavelet_super_resolution_color(image_np, new_width, new_height)
+    else:
+        return jsonify({"error": "Invalid algorithm ID provided"}), 400
 
     processed_image = Image.fromarray(processed_image_np)
 
