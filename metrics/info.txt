@@ -1,0 +1,1 @@
+# 3 metrics are added. We need to give only one parameter(image) as input but once for original image and once for super resolved image(obtained using one of the algos)
