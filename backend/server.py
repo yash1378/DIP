@@ -138,27 +138,27 @@ def apply_algorithm():
     if algorithm_id == 1:
         processed_image_np = bicubic_interpolation(image_np, new_width, new_height)
     elif algorithm_id == 2:
-        processed_image_np = resize_image_bilinear(image, new_width, new_height)
+        # processed_image_np = resize_image_bilinear(image, new_width, new_height)
         processed_image_np = resize_image_bilinear(image_np, new_width, new_height)
     elif algorithm_id == 3:
-        processed_image_np = fourier_transform_super_resolution(image, new_width, new_height)
+        # processed_image_np = fourier_transform_super_resolution(image, new_width, new_height)
         processed_image_np = fourier_transform_super_resolution(image_np, new_width, new_height)
     elif algorithm_id == 4:
-        processed_image_np = iterative_back_projection(image, new_width, new_height)
+        # processed_image_np = iterative_back_projection(image, new_width, new_height)
         processed_image_np = iterative_back_projection(image_np, new_width, new_height)
     elif algorithm_id == 5:
-        processed_image_np = lanczos_resample(image, new_width, new_height)
+        # processed_image_np = lanczos_resample(image, new_width, new_height)
         processed_image_np = lanczos_resample(image_np, new_width, new_height)
     elif algorithm_id == 6:
         processed_image_np = nearest_neighbour_interpolation(image_np, new_width, new_height)
     elif algorithm_id == 7:
-        processed_image_np = non_local_means_super_resolution(image, new_width, new_height)
+        # processed_image_np = non_local_means_super_resolution(image, new_width, new_height)
         processed_image_np = non_local_means_super_resolution(image_np, new_width, new_height)
     elif algorithm_id == 8:
-        processed_image_np = upscale_with_tv(image, new_width, new_height)
+        # processed_image_np = upscale_with_tv(image, new_width, new_height)
         processed_image_np = upscale_with_tv(image_np, new_width, new_height)
     elif algorithm_id == 9:
-        processed_image_np = wavelet_super_resolution_color(image, new_width, new_height)
+        # processed_image_np = wavelet_super_resolution_color(image, new_width, new_height)
         print(image_np.shape)
         processed_image_np = wavelet_super_resolution_color(image_np, new_width, new_height)
     else:
