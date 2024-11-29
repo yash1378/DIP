@@ -12,6 +12,7 @@ def nearest_neighbour_interpolation(image, new_width, new_height):
     Returns:
         numpy.ndarray: The resized image.
     """
+    print(image.shape)
     height, width, channels = image.shape  # Get the original dimensions of the image
     result = np.zeros((new_height, new_width, channels), dtype=image.dtype)  # Create an empty output image
 

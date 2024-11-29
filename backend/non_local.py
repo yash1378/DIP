@@ -1,6 +1,18 @@
 import numpy as np
 from nearest_neighbour_interpolation import nearest_neighbour_interpolation
 
+# Load the low-resolution image
+# image_path = "./robot.jpg"  # Replace with your image path
+# lr_image = load_image(image_path)  # Use the load_image function
+
+# Example of displaying the loaded image
+# display_images([lr_image], ["Low-Resolution Image"])
+
+# Example of drawing pixel traces
+# traced_image = draw_pixel_trace(lr_image, pixel_size=5)  # Adjust pixel size as needed
+# display_images([traced_image], ["Traced Image"])
+
+# Non-local based SR
 def compute_weighted_average(patch, target_patch, h):
     """
     Compute the weighted average of a pixel based on patch similarity.
@@ -22,12 +34,12 @@ def compute_weighted_average(patch, target_patch, h):
     weight = np.exp(-np.clip(dist2 / (h ** 2), -100, 0))
     return weight
 
-def non_local_means_super_resolution(image_path, new_width, new_height, h=10, template_window_size=3, search_window_size=11):
+def non_local_means_super_resolution(image, new_width, new_height, h=10, template_window_size=3, search_window_size=11):
     """
     Apply Non-Local Means filtering to an upscaled version of the input image for super-resolution.
     
     Args:
-        image_path (str): Path to the low-resolution image.
+        image (numpy.ndarray): Input low-resolution image.
         new_width (int): Target width of the super-resolved image.
         new_height (int): Target height of the super-resolved image.
         h (float): Parameter controlling filter strength (higher = stronger denoising).
@@ -37,14 +49,8 @@ def non_local_means_super_resolution(image_path, new_width, new_height, h=10, te
     Returns:
         numpy.ndarray: Super-resolved image.
     """
-    # Load the low-resolution image
-    image = cv2.imread(image_path)  # Read the image
-    if image is None:
-        raise FileNotFoundError(f"Image not found at {image_path}")
-    image_rgb = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)  # Convert to RGB format
-
     # Step 1: Upscale the image using nearest neighbor interpolation
-    upscaled_image = nearest_neighbour_interpolation(image_rgb, new_width, new_height)
+    upscaled_image = nearest_neighbour_interpolation(image, new_width, new_height)
 
     # Pad the image to handle border pixels
     padded_image = np.pad(upscaled_image, ((search_window_size//2, search_window_size//2), 
@@ -81,10 +87,27 @@ def non_local_means_super_resolution(image_path, new_width, new_height, h=10, te
             
             # Avoid division by zero
             if total_weight == 0:
-                filtered_image[i, j] = image_rgb[i, j]
+                filtered_image[i, j] = image[i, j]
             else:
                 filtered_image[i, j] = weighted_sum / total_weight
+
+            # Normalize by total weight to get the final pixel value
+            filtered_image[i, j] = weighted_sum / total_weight
 
     # Clip values to valid range and convert to uint8
     filtered_image = np.clip(filtered_image, 0, 255).astype(np.uint8)
     return filtered_image
+
+
+# # Example
+# # Set new dimensions for the output image
+# new_height, new_width = 500, 300  # Replace with your desired dimensions
+
+# # Note: template_window_size -> 3x3, 5x5, 7x7
+# #       search_window_size -> 11x11, 21x21, 31x31
+# # Preferable is 3x3 and 11x11 as others take a lot more time
+# nonlocal_image = non_local_means_super_resolution(lr_image, new_width, new_height)
+
+# # Display results
+# if __name__ == "__main__":
+#     display_images([nonlocal_image], ["Non-local based SR"])
