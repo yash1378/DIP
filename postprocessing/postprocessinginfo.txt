@@ -1,0 +1,7 @@
+# Edge detection algorithm has no parameter. (Using Sobel Operator)
+
+# Saturation adjusting algorithm has one parameter -> saturation_scale (set to 1.5 by default)
+
+# Gaussian blur algorithm has two parameters -> kernel_size and sigma (by default kernel_size -> 7 and sigma -> 100)
+
+# Gamma correction algorithm has one parameter -> gamma (set to 0.5 by default). If gamma < 1 , the image will be brightened and if gamma > 1 it will be darkened.
