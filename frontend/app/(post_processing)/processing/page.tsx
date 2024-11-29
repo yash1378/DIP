@@ -1,5 +1,5 @@
-"use client"
-import React from 'react';
+'use client'
+import React, { useEffect, useState } from 'react';
 import { 
   ArrowRight,
   Wand2,
@@ -19,67 +19,53 @@ interface ProcessingStep {
   id: string;
   name: string;
   description: string;
-  impact: 'High' | 'Medium' | 'Low';
   category: string;
-  timeRequired: string;
-  features: string[];
-  qualityScore: number;
+  complexity:string;
+  tags: string[];
+}
+
+interface ImageData {
+  data: string; // base64 string
+  dimensions: string; // e.g., "1920x1080"
+  name: string; // image name
 }
 
 const PostProcessingDisplay = () => {
-  const steps: ProcessingStep[] = [
-    {
-      id: "1",
-      name: "Color Enhancement & Balancing",
-      description: "Advanced color correction with AI-powered tone mapping",
-      impact: "High",
-      category: "Color Correction",
-      timeRequired: "2-3 seconds",
-      features: ["Auto Balance", "HDR", "Vibrance"],
-      qualityScore: 96
-    },
-    {
-      id: "2",
-      name: "Noise Reduction & Sharpening",
-      description: "Intelligent noise reduction while preserving edge details",
-      impact: "Medium",
-      category: "Detail Enhancement",
-      timeRequired: "4-5 seconds",
-      features: ["Smart Sharpen", "Denoise", "Detail Preserve"],
-      qualityScore: 92
-    },
-    {
-      id: "3",
-      name: "Contrast & Brightness Optimization",
-      description: "Dynamic range adjustment with local contrast enhancement",
-      impact: "High",
-      category: "Tone Adjustment",
-      timeRequired: "1-2 seconds",
-      features: ["Auto Contrast", "Shadow Lift", "Highlight Recovery"],
-      qualityScore: 94
-    },
-    {
-      id: "4",
-      name: "Artifact Removal & Cleanup",
-      description: "Advanced algorithms to remove compression artifacts",
-      impact: "Medium",
-      category: "Image Cleanup",
-      timeRequired: "3-4 seconds",
-      features: ["JPEG Fix", "Smooth Edges", "Pattern Remove"],
-      qualityScore: 88
-    },
-    {
-      id: "5",
-      name: "Final Image Optimization",
-      description: "Smart compression and format optimization",
-      impact: "High",
-      category: "Optimization",
-      timeRequired: "2-3 seconds",
-      features: ["Smart Compress", "Format Select", "Metadata Clean"],
-      qualityScore: 95
-    }
-  ];
+  const[ProcessStep, setProcessStep] = useState<ProcessingStep | null>(null);
+  const [steps, setSteps] = useState<ProcessingStep[]>([]);
+  const [images, setImages] = useState<ImageData[]>([]);
+  const [send_images, set_sendImages] = useState<ImageData>();
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const response = await fetch("http://localhost:5000/api/list_post_processing_steps");
+        const data = await response.json();
+        console.log(data); // To inspect the structure and data
+        setSteps(data);
+      } catch (error) {
+        console.error("Error fetching data:", error);
+      }
+    };
 
+    fetchData();
+  }, []);
+
+  useEffect(() => {
+    console.log("clicked")
+    if (ProcessStep) {
+      handleImageClick(send_images); // Call handleImageClick with updated state
+      console.log(
+        "Updated selectedAlgo:",
+        JSON.stringify(ProcessStep, null, 2)
+      );
+    }
+  }, [ProcessStep])
+
+  const handleViewDetails = (algo: ProcessingStep) => {
+    setProcessStep(algo);
+    console.log("Algorithm details:", JSON.stringify(algo, null, 2)); // Clear and formatted output
+  };
+ 
   const navigate = useRouter();
 
   const getCategoryIcon = (category: string) => {
@@ -96,7 +82,16 @@ const PostProcessingDisplay = () => {
         return <Binary className="w-5 h-5" />;
     }
   };
-
+  const convertToBase64Format = (base64String:string)=>{
+    // Prefix the Base64 string with the data URI scheme
+    const mimeType = 'data:image/png;base64,';
+  
+    // Concatenate the MIME type and the Base64 string
+    const formattedBase64String = mimeType + base64String;
+  
+    return formattedBase64String;
+  }
+  
   const getImpactColor = (impact: string) => {
     switch (impact) {
       case "High":
@@ -107,6 +102,59 @@ const PostProcessingDisplay = () => {
         return "bg-gradient-to-r from-blue-400 to-indigo-400";
     }
   };
+
+  useEffect(()=>{
+    const storedImages = localStorage.getItem("images");
+    if (storedImages) {
+      setImages(JSON.parse(storedImages));
+    }
+  },[])
+
+  const handleImageClick = async (image: ImageData | undefined) => {
+    // Send the request to the backend with the image data and algorithm ID
+    console.log(image);
+    console.log("yes:" + ProcessStep?.id);
+    try {
+      console.log(ProcessStep);
+      const response = await fetch(
+        "http://localhost:5000/api/apply-processing",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            imageData: image?.data,
+            processId: ProcessStep?.id,
+          }),
+        }
+      );
+      const data = await response.json();
+      console.log("Response from backend:", data);
+
+      // Save the data in localStorage using algoId as the key
+      if (ProcessStep?.id) {
+        // Save the data in localStorage using algoId as the key
+        // const imageData = {
+        //   processedImage: data.processed_image,  // The Base64 encoded image
+        // };
+        const formattedBase64 = convertToBase64Format(data.processed_image);
+        // Saving the object in localStorage with a unique key (selectedAlgo.id)
+        localStorage.setItem("process"+ProcessStep.id, formattedBase64)    
+        console.log(`Data saved to localStorage with key: ${ProcessStep.id}`);
+      } else {
+        console.error("Algorithm ID (algoId) is missing in the response data.");
+      }
+
+      console.log("Data saved to localStorage");
+    } catch (error) {
+      console.error("Error sending image to backend:", error);
+    }
+  };
+
+  const Router = useRouter();
+
+
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-violet-50 via-fuchsia-50 to-rose-50 p-8">
@@ -121,25 +169,10 @@ const PostProcessingDisplay = () => {
                 {/* Left Column */}
                 <div className="p-6 space-y-4">
                   <div className="flex items-center gap-3">
-                    <div className={`p-2 rounded-lg ${getImpactColor(step.impact)} text-white`}>
-                      {getCategoryIcon(step.category)}
-                    </div>
                     <div>
                       <span className="text-sm font-medium text-gray-500">
                         {step.category}
                       </span>
-                      <Badge 
-                        variant="secondary"
-                        className={`ml-3 ${
-                          step.impact === 'High' 
-                            ? 'bg-emerald-100 text-emerald-700' 
-                            : step.impact === 'Medium'
-                            ? 'bg-amber-100 text-amber-700'
-                            : 'bg-blue-100 text-blue-700'
-                        }`}
-                      >
-                        {step.impact} Impact
-                      </Badge>
                     </div>
                   </div>
                   
@@ -152,7 +185,7 @@ const PostProcessingDisplay = () => {
                   </p>
                   
                   <div className="flex flex-wrap gap-2">
-                    {step.features.map((feature, index) => (
+                    {step.tags.map((feature, index) => (
                       <Badge 
                         key={index}
                         variant="secondary"
@@ -170,27 +203,32 @@ const PostProcessingDisplay = () => {
                     <div className="flex items-center justify-between">
                       <span className="text-sm text-gray-600">Processing Time:</span>
                       <span className="font-mono text-purple-600 font-medium">
-                        {step.timeRequired}
+                        {step.complexity}
                       </span>
                     </div>
                     
-                    <div className="flex items-center justify-between">
-                      <span className="text-sm text-gray-600">Quality Score:</span>
-                      <div className="flex items-center gap-2">
-                        <Contrast className="w-4 h-4 text-purple-500" />
-                        <span className="text-lg font-bold bg-gradient-to-r from-purple-600 to-pink-600 bg-clip-text text-transparent">
-                          {step.qualityScore}%
-                        </span>
-                      </div>
-                    </div>
                   </div>
 
                   <Button
-                    onClick={() => navigate.push(`/process/${step.id}`)}
-                    className="group w-full bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 text-white transition-all duration-300 shadow-lg hover:shadow-xl"
+                    onClick={() => {
+                      console.log("Algorithm clicked:", step); // Log the algorithm details here
+                      handleViewDetails(step); // Call the function
+                    }}
+                    className="group flex items-center gap-2 bg-gradient-to-r from-blue-500 to-indigo-500 hover:from-blue-600 hover:to-indigo-600 text-white transition-all duration-300"
                   >
-                    Configure Step
-                    <ArrowRight className="w-4 h-4 ml-2 group-hover:translate-x-1 transition-transform" />
+                    Apply this Algorithm
+                    <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
+                  </Button>
+                  <Button
+                    onClick={() => {
+                      console.log("Algorithm clicked:", step); // Log the algorithm details here
+                      Router.push(`/process?id=${step.id}`);
+
+                    }}
+                    className="group flex items-center gap-2 bg-gradient-to-r from-blue-500 to-indigo-500 hover:from-blue-600 hover:to-indigo-600 text-white transition-all duration-300"
+                  >
+                    See the Processed Image
+                    <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
                   </Button>
                 </div>
               </div>
@@ -198,7 +236,47 @@ const PostProcessingDisplay = () => {
           </Card>
         ))}
       </div>
+        {/* Display Images if an algorithm is selected */}
+        {/* {selectedAlgo && ( */}
+        <div className="mt-8 space-y-4">
+          <h2 className="text-2xl font-semibold text-gray-800">
+            Images for Post Processing
+          </h2>
+          <div className="grid grid-cols-3 gap-4">
+            {images.map((image, index) => (
+              <div
+                key={index}
+                className="cursor-pointer border-2 border-gray-200 rounded-lg overflow-hidden"
+                onClick={() => {
+                  set_sendImages((prev) => {
+                    const updatedState = {
+                      ...prev, // Spread the previous state to retain any other properties
+                      data: image.data,
+                      dimensions: image.dimensions,
+                      name: image.name,
+                    };
+
+                    console.log("Updated send_images state:", updatedState); // Log the updated state
+                    return updatedState; // Return the updated state
+                  });
+                }}
+              >
+                <img
+                  src={image.data}
+                  alt={image.name}
+                  className="w-full h-auto"
+                />
+                <div className="p-2 text-center text-gray-600">
+                  <span>{image.name}</span>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+        {/* )} */}
     </div>
+
+
   );
 };
 
