@@ -30,6 +30,8 @@ def bicubic_interpolation(image, new_width, new_height):
     Returns:
         numpy.ndarray: The resized image.
     """
+    # if len(image.shape) == 2:  # Grayscale image
+    #     image = np.expand_dims(image, axis=-1)  # Add a channel dimension
     height, width, channels = image.shape
     result = np.zeros((new_height, new_width, channels), dtype=image.dtype)
 
@@ -61,5 +63,8 @@ def bicubic_interpolation(image, new_width, new_height):
                         )
 
                 result[i, j, c] = np.clip(pixel_value, 0, 255)
-
+                
+    print(result)
+    print(len(result))
+    print(result.astype(np.uint8))
     return result.astype(np.uint8)

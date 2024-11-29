@@ -37,35 +37,8 @@ const AlgorithmsDisplay = () => {
   const [send_images, set_sendImages] = useState<ImageData>();
   const [data, setData] = useState<string>("");
   const Router = useRouter();
-  const isValidAlgorithm = () => {
-    if (!selectedAlgo) {
-      return false; // Return false if the variable itself is null or undefined
-    }
 
-    const { id, name, description, complexity, category, performance, tags } =
-      selectedAlgo;
 
-    return (
-      id !== null &&
-      id !== undefined &&
-      name !== null &&
-      name !== undefined &&
-      description !== null &&
-      description !== undefined &&
-      complexity !== null &&
-      complexity !== undefined &&
-      category !== null &&
-      category !== undefined &&
-      performance !== null &&
-      performance !== undefined &&
-      Array.isArray(tags) &&
-      tags.length > 0 // Ensure tags is a non-empty array
-    );
-  };
-
-  const isImageDataEmpty = (imageData: ImageData) => {
-    return !imageData.data || !imageData.dimensions || !imageData.name;
-  };
   // Fetch images from local storage
 
   const handleViewDetails = (algo: Algorithm) => {
