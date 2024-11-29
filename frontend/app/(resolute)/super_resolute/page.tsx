@@ -34,7 +34,44 @@ const AlgorithmsDisplay = () => {
   const [algorithms, setAlgorithms] = useState<Algorithm[]>([]);
   const [selectedAlgo, setSelectedAlgo] = useState<Algorithm | null>(null);
   const [images, setImages] = useState<ImageData[]>([]);
+  const [send_images, set_sendImages] = useState<ImageData>();
+  const [data, setData] = useState<string>("");
   const Router = useRouter();
+  const isValidAlgorithm = () => {
+    if (!selectedAlgo) {
+      return false; // Return false if the variable itself is null or undefined
+    }
+
+    const { id, name, description, complexity, category, performance, tags } =
+      selectedAlgo;
+
+    return (
+      id !== null &&
+      id !== undefined &&
+      name !== null &&
+      name !== undefined &&
+      description !== null &&
+      description !== undefined &&
+      complexity !== null &&
+      complexity !== undefined &&
+      category !== null &&
+      category !== undefined &&
+      performance !== null &&
+      performance !== undefined &&
+      Array.isArray(tags) &&
+      tags.length > 0 // Ensure tags is a non-empty array
+    );
+  };
+
+  const isImageDataEmpty = (imageData: ImageData) => {
+    return !imageData.data || !imageData.dimensions || !imageData.name;
+  };
+  // Fetch images from local storage
+
+  const handleViewDetails = (algo: Algorithm) => {
+    setSelectedAlgo(algo);
+    console.log("Algorithm details:", JSON.stringify(algo, null, 2)); // Clear and formatted output
+  };
 
   useEffect(() => {
     const fetchData = async () => {
@@ -49,9 +86,24 @@ const AlgorithmsDisplay = () => {
         console.error("Error fetching data:", error);
       }
     };
+    const storedImages = localStorage.getItem("images");
+    if (storedImages) {
+      setImages(JSON.parse(storedImages));
+    }
 
     fetchData();
   }, []);
+
+  // New useEffect to handle updates to selectedAlgo
+  useEffect(() => {
+    if (selectedAlgo) {
+      handleImageClick(send_images); // Call handleImageClick with updated state
+      console.log(
+        "Updated selectedAlgo:",
+        JSON.stringify(selectedAlgo, null, 2)
+      );
+    }
+  }, [selectedAlgo]); // Triggered whenever `selectedAlgo` changes
 
   const getCategoryIcon = (category: string) => {
     switch (category) {
@@ -72,30 +124,46 @@ const AlgorithmsDisplay = () => {
     return "text-yellow-500";
   };
 
-  const handleViewDetails = (algo: Algorithm) => {
-    setSelectedAlgo(algo);
-    // Fetch images from local storage
-    const storedImages = localStorage.getItem("images");
-    if (storedImages) {
-      setImages(JSON.parse(storedImages));
-    }
-  };
-
-  const handleImageClick = async (image: ImageData) => {
+  const handleImageClick = async (image: ImageData | undefined) => {
     // Send the request to the backend with the image data and algorithm ID
+    console.log(image);
+    console.log("yes:" + selectedAlgo?.id);
     try {
-      const response = await fetch("http://localhost:5000/api/apply-algorithm", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          imageData: image.data,
-          algoId: selectedAlgo?.id,
-        }),
-      });
+      console.log(selectedAlgo);
+      const response = await fetch(
+        "http://localhost:5000/api/apply-algorithm",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            imageData: image?.data,
+            algoId: selectedAlgo?.id,
+          }),
+        }
+      );
       const data = await response.json();
       console.log("Response from backend:", data);
+
+      // Save the data in localStorage using algoId as the key
+      if (selectedAlgo?.id) {
+        // Save the data in localStorage using algoId as the key
+        const imageData = {
+          processedImage: data.processedImage,  // The Base64 encoded image
+          width: data.new_width,           // New width
+          height: data.new_height         // New height
+        };
+    
+        // Saving the object in localStorage with a unique key (selectedAlgo.id)
+        localStorage.setItem(selectedAlgo.id, JSON.stringify(imageData));
+    
+        console.log(`Data saved to localStorage with key: ${selectedAlgo.id}`);
+      } else {
+        console.error("Algorithm ID (algoId) is missing in the response data.");
+      }
+
+      console.log("Data saved to localStorage");
     } catch (error) {
       console.error("Error sending image to backend:", error);
     }
@@ -158,12 +226,25 @@ const AlgorithmsDisplay = () => {
                       </span>
                     </div>
                   </div>
-
                   <Button
-                    onClick={() => handleViewDetails(algo)}
+                    onClick={() => {
+                      console.log("Algorithm clicked:", algo); // Log the algorithm details here
+                      Router.push(`/number?id=${algo.id}`);
+
+                    }}
                     className="group flex items-center gap-2 bg-gradient-to-r from-blue-500 to-indigo-500 hover:from-blue-600 hover:to-indigo-600 text-white transition-all duration-300"
                   >
-                    View Details
+                    See the Processed Image
+                    <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
+                  </Button>
+                  <Button
+                    onClick={() => {
+                      console.log("Algorithm clicked:", algo); // Log the algorithm details here
+                      handleViewDetails(algo); // Call the function
+                    }}
+                    className="group flex items-center gap-2 bg-gradient-to-r from-blue-500 to-indigo-500 hover:from-blue-600 hover:to-indigo-600 text-white transition-all duration-300"
+                  >
+                    Apply this Algorithm
                     <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
                   </Button>
                 </div>
@@ -173,31 +254,43 @@ const AlgorithmsDisplay = () => {
         ))}
 
         {/* Display Images if an algorithm is selected */}
-        {selectedAlgo && (
-          <div className="mt-8 space-y-4">
-            <h2 className="text-2xl font-semibold text-gray-800">
-              Images for {selectedAlgo.name}
-            </h2>
-            <div className="grid grid-cols-3 gap-4">
-              {images.map((image, index) => (
-                <div
-                  key={index}
-                  className="cursor-pointer border-2 border-gray-200 rounded-lg overflow-hidden"
-                  onClick={() => handleImageClick(image)}
-                >
-                  <img
-                    src={image.data}
-                    alt={image.name}
-                    className="w-full h-auto"
-                  />
-                  <div className="p-2 text-center text-gray-600">
-                    <span>{image.name}</span>
-                  </div>
+        {/* {selectedAlgo && ( */}
+        <div className="mt-8 space-y-4">
+          <h2 className="text-2xl font-semibold text-gray-800">
+            Images for {selectedAlgo?.name}
+          </h2>
+          <div className="grid grid-cols-3 gap-4">
+            {images.map((image, index) => (
+              <div
+                key={index}
+                className="cursor-pointer border-2 border-gray-200 rounded-lg overflow-hidden"
+                onClick={() => {
+                  set_sendImages((prev) => {
+                    const updatedState = {
+                      ...prev, // Spread the previous state to retain any other properties
+                      data: image.data,
+                      dimensions: image.dimensions,
+                      name: image.name,
+                    };
+
+                    console.log("Updated send_images state:", updatedState); // Log the updated state
+                    return updatedState; // Return the updated state
+                  });
+                }}
+              >
+                <img
+                  src={image.data}
+                  alt={image.name}
+                  className="w-full h-auto"
+                />
+                <div className="p-2 text-center text-gray-600">
+                  <span>{image.name}</span>
                 </div>
-              ))}
-            </div>
+              </div>
+            ))}
           </div>
-        )}
+        </div>
+        {/* )} */}
       </div>
     </div>
   );
