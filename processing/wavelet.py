@@ -5,7 +5,7 @@ from image_utils import load_image, display_images, draw_pixel_trace
 from nearestneighbour import nearest_neighbour_interpolation
 
 # Load the low-resolution image
-image_path = "./robot.jpg"  # Replace with your image path
+image_path = "./processing/robot.jpg"  # Replace with your image path
 lr_image = load_image(image_path)  # Use the load_image function
 
 # Example of displaying the loaded image
@@ -30,6 +30,7 @@ def wavelet_super_resolution_color(image, new_width, new_height):
     """
     # Split the image into its RGB channels
     channels = cv2.split(image)
+    print(channels)                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                             
     
     # Initialize an empty list to hold the super-resolved channels
     super_resolved_channels = []
@@ -67,6 +68,7 @@ new_height, new_width = 750, 750  # Replace with your desired dimensions
 
 # Perform interpolations
 wavelet_image = wavelet_super_resolution_color(lr_image, new_width, new_height)
+print(wavelet_image.shape)
 
 # Display results
 if __name__ == "__main__":
