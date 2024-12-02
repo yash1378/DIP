@@ -5,6 +5,7 @@ from io import BytesIO
 import numpy as np
 from nearest_neighbour_interpolation import nearest_neighbour_interpolation  # Adjust based on your directory structure
 from bicubic import bicubic_interpolation
+from video import process_video
 from bilinear import resize_image_bilinear
 from lanczos import lanczos_resample
 from wavelet import wavelet_super_resolution_color
@@ -104,6 +105,38 @@ def get_post_processing_methods():
     return jsonify(methods)
 
 
+
+@app.route('/api/video', methods=['POST'])
+@cross_origin()
+def apply_video():
+    data = request.get_json()
+    
+    # Check if video data is provided
+    if not data or 'video' not in data:
+        return jsonify({"error": "No video data provided"}), 400
+
+    video_data_base64 = data['video']
+    algo = data['algorithm']  # The algorithm id (e.g., 1 for Bicubic Interpolation, 2 for Bilinear Interpolation)
+    print(f"Algorithm ID: {algo}")
+    
+    try:
+        # Decode the base64 string to bytes
+        video_data = base64.b64decode(video_data_base64.split(",")[1])
+
+        # Process the video and get the processed frames
+        processed_video_data = process_video(video_data, algo)
+
+        # Return the processed video as a Base64 string
+        return jsonify({
+            "message": "Video processed successfully",
+            "processed_video": f"data:video/mp4;base64,{processed_video_data}"
+        }), 200
+
+    except Exception as e:
+        print(f"Error: {e}")
+        return jsonify({"error": "An error occurred while processing the video"}), 500
+    
+
 @app.route('/api/apply-algorithm', methods=['POST'])
 @cross_origin()
 def apply_algorithm():
@@ -126,12 +159,12 @@ def apply_algorithm():
     print(len(image_np[0][0]))
     
     # Set new dimensions for the output image
-    new_height, new_width = 1000, 600  # Replace with your desired dimensions
+    new_height, new_width = 1000, 1000  # Replace with your desired dimensions
     print('algorithm_id:', algorithm_id)
     if algorithm_id == 1 or algorithm_id == 5 or algorithm_id == 7:
         new_height, new_width = 500, 300  # Replace with your desired dimensions
     else:
-        new_height, new_width = 1000, 600  # Replace with your desired dimensions
+        new_height, new_width = 1000, 1000  # Replace with your desired dimensions
         
         
     # Process the image based on the selected algorithm
@@ -347,4 +380,4 @@ def apply_metrics():
         return jsonify({"error": "Failed during processing", "details": str(e)}), 500
     
 if __name__ == '__main__':
-    app.run(debug=False)
+    app.run(debug=True)
