@@ -1,6 +1,6 @@
 "use client";
 import React from 'react';
-import { Upload, Image as ImageIcon, Camera, Settings2, Download, Home, ArrowRight } from "lucide-react";
+import { Upload, Image as ImageIcon, Camera, VideoIcon,Settings2, Download, Home, ArrowRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { motion } from "framer-motion";
 import { cn } from "@/lib/utils";
@@ -14,7 +14,8 @@ function Navbar() {
         { id: "resize", label: "Change Size", icon: <Settings2 className="w-4 h-4" />, route: "/resize" },
         { id: "resolution", label: "Super Resolution", icon: <Camera className="w-4 h-4" />, route: "/super_resolute" },
         { id: "processing", label: "Processing", icon: <ArrowRight className="w-4 h-4" />, route: "/processing" },
-        { id: "download", label: "Download", icon: <Download className="w-4 h-4" />, route: "/download" },
+        { id: "download", label: "Compare", icon: <Download className="w-4 h-4" />, route: "/download" },
+        { id: "video", label: "Video", icon: <VideoIcon className="w-4 h-4" />, route: "/video" },
     ];
     
     // Determine the active button based on the current pathname

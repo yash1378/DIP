@@ -45,6 +45,7 @@ def wavelet_super_resolution_color(image, new_width, new_height):
         cH_resized = cv2.resize(cH, (new_width, new_height), interpolation=cv2.INTER_NEAREST)
         cV_resized = cv2.resize(cV, (new_width, new_height), interpolation=cv2.INTER_NEAREST)
         cD_resized = cv2.resize(cD, (new_width, new_height), interpolation=cv2.INTER_NEAREST)
+        # display_images([cA_resized],["cA_"])
         
         # Reconstruct the image using the resized coefficients
         super_resolved_channel = pywt.idwt2((cA_resized, (cH_resized, cV_resized, cD_resized)), 'haar')
