@@ -210,6 +210,7 @@ const AlgorithmsDisplay = () => {
                     See the Processed Image
                     <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
                   </Button>
+                  <br />
                   <Button
                     onClick={() => {
                       console.log("Algorithm clicked:", algo); // Log the algorithm details here

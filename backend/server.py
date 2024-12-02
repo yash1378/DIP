@@ -19,6 +19,7 @@ from adjust_saturation import saturation_adjust_color
 from gaussian_blur import gaussian_blur_color
 from entropy import calculate_entropy
 from contrast import calculate_contrast
+from video_processing import processing_video
 from snr import calculate_snr
 import base64
 import os
@@ -135,6 +136,37 @@ def apply_video():
     except Exception as e:
         print(f"Error: {e}")
         return jsonify({"error": "An error occurred while processing the video"}), 500
+    
+@app.route('/api/video/processing', methods=['POST'])
+@cross_origin()
+def apply_video_processing():
+    data = request.get_json()
+    
+    # Check if video data is provided
+    if not data or 'video' not in data:
+        return jsonify({"error": "No video data provided"}), 400
+
+    video_data_base64 = data['video']
+    algo = data['algorithm']  # The algorithm id (e.g., 1 for Bicubic Interpolation, 2 for Bilinear Interpolation)
+    print(f"Algorithm ID: {algo}")
+    
+    try:
+        # Decode the base64 string to bytes
+        video_data = base64.b64decode(video_data_base64.split(",")[1])
+
+        # Process the video and get the processed frames
+        processed_video_data = processing_video(video_data, algo)
+
+        # Return the processed video as a Base64 string
+        return jsonify({
+            "message": "Video processed successfully",
+            "processed_video": f"data:video/mp4;base64,{processed_video_data}"
+        }), 200
+
+    except Exception as e:
+        print(f"Error: {e}")
+        return jsonify({"error": "An error occurred while processing the video"}), 500
+    
     
 
 @app.route('/api/apply-algorithm', methods=['POST'])
