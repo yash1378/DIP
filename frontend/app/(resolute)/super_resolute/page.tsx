@@ -130,6 +130,7 @@ const AlgorithmsDisplay = () => {
     
         // Saving the object in localStorage with a unique key (selectedAlgo.id)
         localStorage.setItem(selectedAlgo.id, JSON.stringify(imageData));
+        alert("Processed Image received now click on the see the image option")
     
         console.log(`Data saved to localStorage with key: ${selectedAlgo.id}`);
       } else {

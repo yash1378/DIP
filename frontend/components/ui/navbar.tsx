@@ -16,6 +16,7 @@ function Navbar() {
         { id: "processing", label: "Processing", icon: <ArrowRight className="w-4 h-4" />, route: "/processing" },
         { id: "download", label: "Compare", icon: <Download className="w-4 h-4" />, route: "/download" },
         { id: "video", label: "Video", icon: <VideoIcon className="w-4 h-4" />, route: "/video" },
+        { id: "DL", label: "DL based Processing", icon: <ArrowRight className="w-4 h-4" />, route: "/dlbased" },
     ];
     
     // Determine the active button based on the current pathname

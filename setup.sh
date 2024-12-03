@@ -9,8 +9,19 @@ echo "Starting setup for backend and frontend applications..."
 echo "Navigating to the backend directory..."
 cd backend
 
+# Create a Python virtual environment
+echo "Creating a Python virtual environment..."
+python3 -m venv myenv
+
+echo "Activating the virtual environment..."
+source venv/bin/activate
+
 echo "Installing Python dependencies from requirements.txt..."
 pip install -r requirements.txt
+
+echo "Initializing the backend (if any setup required)..."
+# Add any backend initialization commands here (e.g., migrations)
+# Example: python manage.py migrate
 
 echo "Starting Flask backend..."
 # Run the Flask app in the background
