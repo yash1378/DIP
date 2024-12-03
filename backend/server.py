@@ -18,6 +18,7 @@ from gammacorrection import gamma_correction
 from adjust_saturation import saturation_adjust_color
 from gaussian_blur import gaussian_blur_color
 from entropy import calculate_entropy
+from dlbasedSR import load_esrgan_model,preprocess_image,super_resolve_image
 from contrast import calculate_contrast
 from video_processing import processing_video
 from snr import calculate_snr
@@ -36,8 +37,13 @@ sys.path.append(root_dir)
 PROCESSED_IMAGE_DIR = 'processed_images'
 os.makedirs(PROCESSED_IMAGE_DIR, exist_ok=True)
 
+# Define a directory to store uploaded images
+UPLOAD_IMAGE_DIR = 'uploaded_images'
+if not os.path.exists(UPLOAD_IMAGE_DIR):
+    os.makedirs(UPLOAD_IMAGE_DIR)
+    
 app = Flask(__name__)
-CORS(app, origins=["http://localhost:3000"])
+CORS(app, origins=["*"])
   # Enable CORS for all routes
 app.config['CORS_HEADERS'] = 'Content-Type'
 
@@ -166,6 +172,52 @@ def apply_video_processing():
     except Exception as e:
         print(f"Error: {e}")
         return jsonify({"error": "An error occurred while processing the video"}), 500
+    
+@app.route('/api/dlbased', methods=['POST'])
+@cross_origin()
+def apply_dlbased():
+    # Check if the request contains the file
+    if 'file' not in request.files:
+        return jsonify({"error": "No file provided"}), 400
+
+    file = request.files['file']
+    
+    try:
+        # Save the uploaded image to the server
+        uploaded_image_path = os.path.join(UPLOAD_IMAGE_DIR, file.filename)
+        file.save(uploaded_image_path)
+        
+        print("100")
+
+        # Load the model
+        model = load_esrgan_model("RRDB_ESRGAN_x4.pth")
+
+        # Open the uploaded image
+        # img = Image.open(uploaded_image_path)
+
+        # Preprocess the image
+        lr_image = preprocess_image(uploaded_image_path)
+
+        # Generate the super-resolved image
+        sr_image = super_resolve_image(model, lr_image)
+
+        # Convert numpy array (sr_image) to PIL image if it's not already
+        if isinstance(sr_image, np.ndarray):
+            sr_image = Image.fromarray(sr_image)
+
+        # Convert the processed image to base64 for transmission
+        buffered = BytesIO()
+        sr_image.save(buffered, format="PNG")
+        sr_image_base64 = base64.b64encode(buffered.getvalue()).decode('utf-8')
+
+        return jsonify({
+            "message": "Image processed successfully",
+            "processed_image": f"data:image/png;base64,{sr_image_base64}"
+        }), 200
+
+    except Exception as e:
+        print(f"Error: {e}")
+        return jsonify({"error": "An error occurred while processing the image"}), 500
     
     
 
