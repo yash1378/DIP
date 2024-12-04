@@ -46,7 +46,7 @@ The `setup.sh` script will handle the following for you:
 
 For issues or questions:
 - Open a GitHub Issue
-- Email: support@yourproject.com
+- Email: yash_d@ece.iitr.ac.in
 
 ---
 
